@@ -20,7 +20,7 @@ Assuming you have the [heroku toolbelt](https://toolbelt.heroku.com/) installed,
 
 ## Security
 
-It's a bad idea to use this in a coffee shop. Your redis/mongo shell connections are probably made using unencrypted traffic. If you must connect while on a public network, first ssh into a remote terminal (to a more trusted traffic origin), and connect from there.
+It's a bad idea to use this in a coffee shop. Your redis/mongo shell connections are probably made over unencrypted traffic. If you must connect while on a public network, first ssh into a remote terminal (to a more trusted traffic origin), and connect from there.
 
-2013 / Steve McHail
+2013 / Steve McHail  
 LICENSE: [WTFPL](http://en.wikipedia.org/wiki/WTFPL)
