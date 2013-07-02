@@ -197,34 +197,3 @@ class Sheroku
 end
 
 Sheroku.new
-
-# # get heroku environment
-# config_string = "heroku config"
-# if options[:appname]
-# 	config_string += " -a #{options[:appname]}"
-# end
-# puts "Parsing Heroku environment..."
-# heroku_env_raw = `#{config_string} 2>&1`
-# if heroku_env_raw.include? "No app specified"
-# 	puts "No heroku environment found. Run from an app directory or specify an app with -a"
-# 	exit
-# end
-# heroku_env = Hash[heroku_env_raw.split("\n")[1..-1].map{|var| var.split(/:\s+/)}]
-# redis_url_var = options[:varname]
-# redis_url = heroku_env[redis_url_var]
-# redis_uri = URI.parse(redis_url)
-
-# host = options[:urlhost] ? redis_uri.host : options[:host]
-# port = redis_uri.port
-# password = redis_uri.password
-# db = options[:db]
-
-# connection_string = "redis-cli -h #{host} -p #{port} -a #{password} -n #{db}"
-# if options[:command]
-# 	connection_string += " #{options[:command]}"
-# end
-# puts "Constructed connection string... Starting redis-cli"
-
-# exec connection_string
-
-
