@@ -1,3 +1,222 @@
 #!/usr/bin/env ruby
 
-puts 'hello'
+require 'optparse'
+require 'uri'
+require 'ostruct'
+require 'open3'
+
+class Sheroku
+
+	DEFAULTS = {
+		mongo: {
+		},
+		redis: {
+			db: 0
+		}
+	}
+
+	def initialize
+		@options = OpenStruct.new
+		parse_options
+		start_shell
+	end
+
+	def parse_options
+		OptionParser.new do |opts|
+			opts.banner = "Usage: sheroku [shelltype] [options]"
+			opts.on("-a", "--app [APPNAME]", "Specify heroku app name") do |appname|
+				@options.appname = appname
+			end
+			opts.on("-v", "--variable [VARNAME]", "Specify environment variable name for connection string (e.g. MONGOHQ_URL)") do |varname|
+				@options.varname = varname
+			end
+			opts.on("-d", "--db", "Specify database name/number") do |db|
+				@options.db = db
+			end
+			opts.on("-h", "--host [HOST]", "Specify hostname (e.g. proxy1.openredis.com)") do |host|
+				@options.host = host
+			end
+			opts.on("-e", "--eval [COMMAND]", "Evaluate a command and exit (used for redis)") do |command|
+				@options.eval = eval
+			end
+			opts.on("--debug", "Debug mode: will print full connection string") do |debug|
+				@options.debug = true
+			end
+			opts.on("--args [ADDITIONAL_ARGS]", "Additional arguments appended to the connection string") do |args|
+				@options.args = args
+			end
+			opts.on_tail("--help", "Show this message") do
+				help(opts)
+			end
+			@help_opts = opts
+		end.parse!
+	end
+
+	def help(options = nil)
+		options ||= @help_opts
+		puts "sheroku"
+		puts "======="
+		puts "Launch a shell using heroku environment variables. Run while inside a"
+		puts "directory linked to a heroku project."
+		puts ""
+		puts @help_opts
+		puts "Examples:"
+		puts "     $ sheroku mongo"
+		puts "     $ sheroku redis -h proxy2.openredis.com"
+		puts "     $ sheroku redis -v SCRIPT_REDIS_URL -h proxy2.openredis.com"
+		puts "     $ sheroku redis -n 1"
+		puts "     $ sheroku redis -e info | grep used_memory_human"
+		exit
+	end
+
+	def start_shell
+		shell_type = ARGV[0]
+		if shell_type.nil?
+			help
+		end
+		if not DEFAULTS.keys.include? shell_type.to_sym
+			puts "Shell type '#{shell_type}' unrecognized."
+			puts "sheroku recognizes: #{DEFAULTS.keys.join(', ')}."
+			puts "Try `sheroku --help` for examples."
+			exit
+		end
+		get_heroku_env
+		send "start_#{shell_type}"
+	end
+
+	def get_heroku_env
+		command = "heroku config"
+		if @options.appname
+			command += " -a #{@options.appname}"
+		end
+		puts "Retrieving heroku config..."
+		stdin, stdout, stderr = Open3.popen3 command
+		if stderr.any?
+			puts "Error retrieving heroku config. Are you in a heroku app directory?"
+			exit
+		end
+		raw_config = stdout.readlines
+		raw_config.shift # dump header info
+		@heroku_env = Hash[raw_config.map{|line| line.chomp.split(/:\s+/)}]
+	end
+
+	def start_mongo
+		defaults = DEFAULTS[:mongo]
+		connection_uri = nil
+		if @options.varname
+			connection_uri = @heroku_env[@options.varname]
+		else
+			if @heroku_env.keys.include? 'MONGO_URL'
+				connection_uri = @heroku_env['MONGO_URL']
+			elsif @heroku_env.keys.include? 'MONGOHQ_URL'
+				connection_uri = @heroku_env['MONGOHQ_URL']
+			elsif @heroku_env.keys.include? 'MONGOLAB_URL'
+				connection_uri = @heroku_env['MONGOLAB_URL']
+			else
+				key = @heroku_env.keys.select{|k| k =~ /mongo/i}.first
+				unless key.nil?
+					connection_uri = @heroku_env[key]
+				end
+			end
+		end
+		if connection_uri.nil?
+			puts "No mongo URL found."
+			exit
+		end
+
+		decomposed_connection_uri = URI.parse(connection_uri)
+		host = @options.host || decomposed_connection_uri.host
+		port = @options.port || decomposed_connection_uri.port
+		db = @options.db || decomposed_connection_uri.path[1..-1]
+		user = decomposed_connection_uri.user
+		password = decomposed_connection_uri.password
+		connection_parameters = ['mongo']
+		connection_parameters << db.to_s
+		connection_parameters << '--host' << host.to_s
+		connection_parameters << '--port' << port.to_s
+		connection_parameters << '--username' << user.to_s
+		connection_parameters << '--password' << password.to_s
+		if @options.eval
+			connection_parameters << '--eval' << "'#{@options.eval.to_s}'"
+		end
+		run(connection_parameters)
+	end
+
+	def start_redis
+		defaults = DEFAULTS[:redis]
+		connection_uri = nil
+		if @options.varname
+			connection_uri = @heroku_env[@options.varname]
+		else
+			if @heroku_env.keys.include? 'REDIS_URL'
+				connection_uri = @heroku_env['REDIS_URL']
+			elsif @heroku_env.keys.include? 'OPENREDIS_URL'
+				connection_uri = @heroku_env['OPENREDIS_URL']
+			elsif @heroku_env.keys.include? 'REDISTOGO_URL'
+				connection_uri = @heroku_env['REDISTOGO_URL']
+			else
+				key = @heroku_env.keys.select{|k| k =~ /redis/i}.first
+				unless key.nil?
+					connection_uri = @heroku_env[key]
+				end
+			end
+		end
+
+		decomposed_connection_uri = URI.parse(connection_uri)
+		host = @options.host || @heroku_env['REDIS_CLI_HOST'] || decomposed_connection_uri.host
+		port = @options.port || decomposed_connection_uri.port
+		db = @options.db || defaults[:db]
+		password = decomposed_connection_uri.password
+		connection_parameters = ['redis-cli']
+		connection_parameters << '-n' << db.to_s
+		connection_parameters << '-h' << host.to_s
+		connection_parameters << '-p' << port.to_s
+		connection_parameters << '-a' << password.to_s
+		if @options.eval
+			connection_parameters << @options.eval.to_s
+		end
+		run(connection_parameters)
+	end
+
+	def run(connection_parameters)
+		if @options.debug
+			puts "Starting shell with connection string:"
+			puts "   #{connection_parameters.join(' ')}"
+		end
+		system *connection_parameters
+	end
+
+end
+
+Sheroku.new
+
+# # get heroku environment
+# config_string = "heroku config"
+# if options[:appname]
+# 	config_string += " -a #{options[:appname]}"
+# end
+# puts "Parsing Heroku environment..."
+# heroku_env_raw = `#{config_string} 2>&1`
+# if heroku_env_raw.include? "No app specified"
+# 	puts "No heroku environment found. Run from an app directory or specify an app with -a"
+# 	exit
+# end
+# heroku_env = Hash[heroku_env_raw.split("\n")[1..-1].map{|var| var.split(/:\s+/)}]
+# redis_url_var = options[:varname]
+# redis_url = heroku_env[redis_url_var]
+# redis_uri = URI.parse(redis_url)
+
+# host = options[:urlhost] ? redis_uri.host : options[:host]
+# port = redis_uri.port
+# password = redis_uri.password
+# db = options[:db]
+
+# connection_string = "redis-cli -h #{host} -p #{port} -a #{password} -n #{db}"
+# if options[:command]
+# 	connection_string += " #{options[:command]}"
+# end
+# puts "Constructed connection string... Starting redis-cli"
+
+# exec connection_string
+
+
