@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Sheroku by mchail</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Sheroku</h1>
+        <p>launch database/application shells using heroku environment variables</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/mchail/sheroku" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/mchail/sheroku/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/mchail/sheroku/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>
+<a name="sheroku" class="anchor" href="#sheroku"><span class="octicon octicon-link"></span></a>sheroku</h1>
+
+<h2>
+<a name="installation-instructions" class="anchor" href="#installation-instructions"><span class="octicon octicon-link"></span></a>Installation instructions</h2>
+
+<p>Copy this into your terminal and hit enter:</p>
+
+<div class="highlight"><pre>curl -s https://raw.github.com/mchail/sheroku/master/install.sh | sh
+</pre></div>
+
+<h2>
+<a name="what-does-it-do" class="anchor" href="#what-does-it-do"><span class="octicon octicon-link"></span></a>What does it do?</h2>
+
+<p>You really should have asked that question before installing it. <code>sheroku</code> helps you launch shell clients (as of the initial release for mongo and redis) using your heroku environment variables. This way, you can have quick, easy access to your database shells without keeping any passwords in plaintext in your <code>.aliases</code>, <code>.bashrc</code>, or code repositories.</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<ol>
+<li>
+<code>cd</code> into a heroku app directory</li>
+<li>type <code>sheroku mongo</code> or <code>sheroku redis</code>
+</li>
+</ol><p>Assuming you have the <a href="https://toolbelt.heroku.com/">heroku toolbelt</a> installed, your heroku environment variables will be automatically parsed, and a shell started. Several options are available if you need to alter the connection string. Type <code>sheroku</code>, without any options, to see the help information.</p>
+
+<h2>
+<a name="security" class="anchor" href="#security"><span class="octicon octicon-link"></span></a>Security</h2>
+
+<p>It's a bad idea to use this in a coffee shop. Your redis/mongo shell connections are probably made over unencrypted traffic. If you must connect while on a public network, first ssh into a remote terminal (to a more trusted traffic origin), and connect from there.</p>
+
+<p>2013 / Steve McHail<br>
+LICENSE: <a href="http://en.wikipedia.org/wiki/WTFPL">WTFPL</a></p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/mchail">mchail</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
