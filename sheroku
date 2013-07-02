@@ -12,6 +12,8 @@ class Sheroku
 		},
 		redis: {
 			db: 0
+		},
+		rails: {
 		}
 	}
 
@@ -36,14 +38,11 @@ class Sheroku
 			opts.on("-h", "--host [HOST]", "Specify hostname (e.g. proxy1.openredis.com)") do |host|
 				@options.host = host
 			end
-			opts.on("-e", "--eval [COMMAND]", "Evaluate a command and exit (used for redis)") do |command|
+			opts.on("-e", "--eval [EVALSTRING]", "Evaluate a command and exit") do |eval|
 				@options.eval = eval
 			end
-			opts.on("--debug", "Debug mode: will print full connection string") do |debug|
+			opts.on("--debug", "Debug mode: will print full connection string (including password)") do |debug|
 				@options.debug = true
-			end
-			opts.on("--args [ADDITIONAL_ARGS]", "Additional arguments appended to the connection string") do |args|
-				@options.args = args
 			end
 			opts.on_tail("--help", "Show this message") do
 				help(opts)
@@ -174,6 +173,15 @@ class Sheroku
 		connection_parameters << '-a' << password.to_s
 		if @options.eval
 			connection_parameters << @options.eval.to_s
+		end
+		run(connection_parameters)
+	end
+
+	def start_rails
+		defaults = DEFAULTS[:rails]
+		connection_parameters = [] << 'heroku' << 'run' << 'console'
+		if @options.appname
+			connection_parameters << '-a' << @options.appname
 		end
 		run(connection_parameters)
 	end
