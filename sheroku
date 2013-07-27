@@ -44,6 +44,9 @@ class Sheroku
 			opts.on("--debug", "Debug mode: will print full connection string (including password)") do |debug|
 				@options.debug = true
 			end
+			opts.on("--string-only", "Print out connection string, but do not start server") do |debug|
+				@options.string_only = true
+			end
 			opts.on_tail("--help", "Show this message") do
 				help(opts)
 			end
@@ -187,11 +190,13 @@ class Sheroku
 	end
 
 	def run(connection_parameters)
-		if @options.debug
+		if @options.debug || @options.string_only
 			puts "Starting shell with connection string:"
 			puts "   #{connection_parameters.join(' ')}"
 		end
-		system *connection_parameters
+		unless @options.string_only
+			system *connection_parameters
+		end
 	end
 
 end
