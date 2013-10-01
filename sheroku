@@ -14,6 +14,8 @@ class Sheroku
 			db: 0
 		},
 		rails: {
+		},
+		rds: {
 		}
 	}
 
@@ -47,6 +49,9 @@ class Sheroku
 			opts.on("--string-only", "Print out connection string, but do not start server") do |debug|
 				@options.string_only = true
 			end
+			opts.on("--print", "Print out connection string, but do not start server") do |debug|
+				@options.string_only = true
+			end
 			opts.on_tail("--help", "Show this message") do
 				help(opts)
 			end
@@ -68,6 +73,7 @@ class Sheroku
 		puts "     $ sheroku redis -v SCRIPT_REDIS_URL -h proxy2.openredis.com"
 		puts "     $ sheroku redis -n 1"
 		puts "     $ sheroku redis -e info | grep used_memory_human"
+		puts "     $ sheroku rds"
 		exit
 	end
 
@@ -180,6 +186,30 @@ class Sheroku
 		run(connection_parameters)
 	end
 
+	def start_rds
+		defaults = DEFAULTS[:rds]
+		connection_uri = nil
+		if @options.varname
+			connection_uri = @heroku_env[@options.varname]
+		else
+			if @heroku_env.keys.include? 'DATABASE_URL'
+				connection_uri = @heroku_env['DATABASE_URL']
+			end
+		end
+
+		decomposed_connection_uri = URI.parse(connection_uri)
+		host = @options.host || decomposed_connection_uri.host
+		port = @options.port || decomposed_connection_uri.port
+		db = @options.db || decomposed_connection_uri.path[1..-1]
+		password = decomposed_connection_uri.password
+		user = decomposed_connection_uri.user
+		connection_string = "mysql -u #{user} -p#{password} -h #{host} -P #{port} #{db}"
+		if @options.eval
+			connection_string << " " << @options.eval.to_s
+		end
+		run(connection_string)
+	end
+
 	def start_rails
 		defaults = DEFAULTS[:rails]
 		connection_parameters = [] << 'heroku' << 'run' << 'console'
@@ -190,6 +220,9 @@ class Sheroku
 	end
 
 	def run(connection_parameters)
+		if connection_parameters.is_a? String
+			connection_parameters = *connection_parameters
+		end
 		if @options.debug || @options.string_only
 			puts "Starting shell with connection string:"
 			puts "   #{connection_parameters.join(' ')}"
