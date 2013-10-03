@@ -8,6 +8,8 @@ require 'open3'
 class Sheroku
 
 	DEFAULTS = {
+		update: {
+		},
 		mongo: {
 		},
 		redis: {
@@ -20,6 +22,7 @@ class Sheroku
 	def initialize
 		@options = OpenStruct.new
 		parse_options
+		puts ARGV.join ", "
 		start_shell
 	end
 
@@ -68,6 +71,9 @@ class Sheroku
 		puts "     $ sheroku redis -v SCRIPT_REDIS_URL -h proxy2.openredis.com"
 		puts "     $ sheroku redis -n 1"
 		puts "     $ sheroku redis -e info | grep used_memory_human"
+		puts ""
+		puts "To update:"
+		puts "     $ sheroku update"
 		exit
 	end
 
@@ -84,6 +90,11 @@ class Sheroku
 		end
 		get_heroku_env
 		send "start_#{shell_type}"
+	end
+
+	def start_update
+		puts "Updating!"
+		exec "curl https://raw.github.com/mchail/sheroku/master/install.sh | sh"
 	end
 
 	def get_heroku_env
