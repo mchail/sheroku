@@ -22,7 +22,6 @@ class Sheroku
 	def initialize
 		@options = OpenStruct.new
 		parse_options
-		puts ARGV.join ", "
 		start_shell
 	end
 
