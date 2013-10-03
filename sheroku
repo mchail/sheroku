@@ -93,7 +93,6 @@ class Sheroku
 			puts "Try `sheroku --help` for examples."
 			exit
 		end
-		get_heroku_env
 		send "start_#{shell_type}"
 	end
 
@@ -115,25 +114,25 @@ class Sheroku
 		end
 		raw_config = stdout.readlines
 		raw_config.shift # dump header info
-		@heroku_env = Hash[raw_config.map{|line| line.chomp.split(/:\s+/)}]
+		heroku_env = Hash[raw_config.map{|line| line.chomp.split(/:\s+/)}]
 	end
 
 	def start_mongo
 		defaults = DEFAULTS[:mongo]
 		connection_uri = nil
 		if @options.varname
-			connection_uri = @heroku_env[@options.varname]
+			connection_uri = heroku_env[@options.varname]
 		else
-			if @heroku_env.keys.include? 'MONGO_URL'
-				connection_uri = @heroku_env['MONGO_URL']
-			elsif @heroku_env.keys.include? 'MONGOHQ_URL'
-				connection_uri = @heroku_env['MONGOHQ_URL']
-			elsif @heroku_env.keys.include? 'MONGOLAB_URL'
-				connection_uri = @heroku_env['MONGOLAB_URL']
+			if heroku_env.keys.include? 'MONGO_URL'
+				connection_uri = heroku_env['MONGO_URL']
+			elsif heroku_env.keys.include? 'MONGOHQ_URL'
+				connection_uri = heroku_env['MONGOHQ_URL']
+			elsif heroku_env.keys.include? 'MONGOLAB_URL'
+				connection_uri = heroku_env['MONGOLAB_URL']
 			else
-				key = @heroku_env.keys.select{|k| k =~ /mongo/i}.first
+				key = heroku_env.keys.select{|k| k =~ /mongo/i}.first
 				unless key.nil?
-					connection_uri = @heroku_env[key]
+					connection_uri = heroku_env[key]
 				end
 			end
 		end
@@ -164,24 +163,24 @@ class Sheroku
 		defaults = DEFAULTS[:redis]
 		connection_uri = nil
 		if @options.varname
-			connection_uri = @heroku_env[@options.varname]
+			connection_uri = heroku_env[@options.varname]
 		else
-			if @heroku_env.keys.include? 'REDIS_URL'
-				connection_uri = @heroku_env['REDIS_URL']
-			elsif @heroku_env.keys.include? 'OPENREDIS_URL'
-				connection_uri = @heroku_env['OPENREDIS_URL']
-			elsif @heroku_env.keys.include? 'REDISTOGO_URL'
-				connection_uri = @heroku_env['REDISTOGO_URL']
+			if heroku_env.keys.include? 'REDIS_URL'
+				connection_uri = heroku_env['REDIS_URL']
+			elsif heroku_env.keys.include? 'OPENREDIS_URL'
+				connection_uri = heroku_env['OPENREDIS_URL']
+			elsif heroku_env.keys.include? 'REDISTOGO_URL'
+				connection_uri = heroku_env['REDISTOGO_URL']
 			else
-				key = @heroku_env.keys.select{|k| k =~ /redis/i}.first
+				key = heroku_env.keys.select{|k| k =~ /redis/i}.first
 				unless key.nil?
-					connection_uri = @heroku_env[key]
+					connection_uri = heroku_env[key]
 				end
 			end
 		end
 
 		decomposed_connection_uri = URI.parse(connection_uri)
-		host = @options.host || @heroku_env['REDIS_CLI_HOST'] || decomposed_connection_uri.host
+		host = @options.host || heroku_env['REDIS_CLI_HOST'] || decomposed_connection_uri.host
 		port = @options.port || decomposed_connection_uri.port
 		db = @options.db || defaults[:db]
 		password = decomposed_connection_uri.password
@@ -200,10 +199,10 @@ class Sheroku
 		defaults = DEFAULTS[:rds]
 		connection_uri = nil
 		if @options.varname
-			connection_uri = @heroku_env[@options.varname]
+			connection_uri = heroku_env[@options.varname]
 		else
-			if @heroku_env.keys.include? 'DATABASE_URL'
-				connection_uri = @heroku_env['DATABASE_URL']
+			if heroku_env.keys.include? 'DATABASE_URL'
+				connection_uri = heroku_env['DATABASE_URL']
 			end
 		end
 
@@ -240,6 +239,10 @@ class Sheroku
 		unless @options.string_only
 			system *connection_parameters
 		end
+	end
+
+	def heroku_env
+		@heroku_env ||= get_heroku_env
 	end
 
 end
