@@ -141,6 +141,9 @@ class Sheroku
 			exit
 		end
 
+		# select first host if URL is a replica set
+		connection_uri.gsub!(/@([^,]+),[^\/]+\//, "@\\1/")
+
 		decomposed_connection_uri = URI.parse(connection_uri)
 		host = @options.host || decomposed_connection_uri.host
 		port = @options.port || decomposed_connection_uri.port
