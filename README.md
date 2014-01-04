@@ -18,6 +18,12 @@ You really should have asked that question before installing it. `sheroku` helps
 
 Assuming you have the [heroku toolbelt](https://toolbelt.heroku.com/) installed, your heroku environment variables will be automatically parsed, and a shell started. Several options are available if you need to alter the connection string. Type `sheroku`, without any options, to see the help information.
 
+## Supported consoles
+
+- mongo
+- redis
+- amazon rds (using the keyword rds, as in `sheroku rds`)
+
 ## Security
 
 It's a bad idea to use this in a coffee shop. Your redis/mongo shell connections are probably made over unencrypted traffic. If you must connect while on a public network, first ssh into a remote terminal (to a more trusted traffic origin), and connect from there.
