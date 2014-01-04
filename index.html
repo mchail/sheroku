@@ -47,7 +47,7 @@
 
 <p>Copy this into your terminal and hit enter:</p>
 
-<div class="highlight"><pre>curl -s https://raw.github.com/mchail/sheroku/master/install.sh | sh
+<div class="highlight highlight-sh"><pre>curl -s https://raw.github.com/mchail/sheroku/master/install.sh <span class="p">|</span> sh
 </pre></div>
 
 <h2>
@@ -66,6 +66,13 @@
 </ol><p>Assuming you have the <a href="https://toolbelt.heroku.com/">heroku toolbelt</a> installed, your heroku environment variables will be automatically parsed, and a shell started. Several options are available if you need to alter the connection string. Type <code>sheroku</code>, without any options, to see the help information.</p>
 
 <h2>
+<a name="supported-consoles" class="anchor" href="#supported-consoles"><span class="octicon octicon-link"></span></a>Supported consoles</h2>
+
+<ul>
+<li>mongo</li>
+<li>redis</li>
+<li>amazon rds (using the keyword rds, as in <code>sheroku rds</code>)</li>
+</ul><h2>
 <a name="security" class="anchor" href="#security"><span class="octicon octicon-link"></span></a>Security</h2>
 
 <p>It's a bad idea to use this in a coffee shop. Your redis/mongo shell connections are probably made over unencrypted traffic. If you must connect while on a public network, first ssh into a remote terminal (to a more trusted traffic origin), and connect from there.</p>
