@@ -18,6 +18,8 @@ class Sheroku
 		rails: {
 		},
 		rds: {
+		},
+		redshift: {
 		}
 	}
 
@@ -216,6 +218,24 @@ class Sheroku
 		password = decomposed_connection_uri.password
 		user = decomposed_connection_uri.user
 		connection_string = "mysql -u #{user} -p#{password} -h #{host} -P #{port} #{db}"
+		if @options.eval
+			connection_string << " " << @options.eval.to_s
+		end
+		run(connection_string)
+	end
+
+	def start_redshift
+		defaults = DEFAULTS[:rds]
+		connection_uri = nil
+		if @options.varname
+			connection_uri = heroku_env[@options.varname]
+		else
+			if heroku_env.keys.include? 'PG_URI'
+				connection_uri = heroku_env['PG_URI']
+			end
+		end
+
+		connection_string = "psql '#{connection_uri}'"
 		if @options.eval
 			connection_string << " " << @options.eval.to_s
 		end
