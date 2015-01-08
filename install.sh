@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Installing sheroku..."
-curl --silent --create-dirs https://raw.github.com/mchail/sheroku/master/sheroku --output ~/bin/sheroku
+curl --silent --create-dirs https://raw.githubusercontent.com/mchail/sheroku/master/sheroku --output ~/bin/sheroku
 echo "Making the sheroku file executable..."
 chmod +x ~/bin/sheroku
 echo "Make sure ~/bin is in your PATH environment variable. Here's what your PATH looks like right now:"
