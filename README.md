@@ -4,7 +4,7 @@
 
 Copy this into your terminal and hit enter:
 ```sh
-curl -s https://raw.github.com/mchail/sheroku/master/install.sh | sh
+curl -Ls https://raw.github.com/mchail/sheroku/master/install.sh | sh
 ```
 
 ## What does it do?
